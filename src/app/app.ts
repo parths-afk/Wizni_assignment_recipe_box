@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { RecipeBox } from './components/recipe-box/recipe-box';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RecipeBox],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
