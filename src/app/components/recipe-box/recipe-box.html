@@ -1,0 +1,107 @@
+<div class="container">
+  <!-- 1. INTERPOLATION -->
+  <header>
+    <h1>{{ appName }}</h1>
+    <p class="status-bar">Status: {{ lastActionMessage }}</p>
+    <p>Saved Favorites: <strong>{{ favoriteCount$ | async }}</strong></p>
+  </header>
+
+  <!-- 2. PROPERTY & EVENT BINDINGS -->
+  <section class="controls">
+    <div class="input-group">
+      <!-- (input) and (blur) events with [placeholder] binding -->
+      <input
+        type="text"
+        [placeholder]="'Search recipes by title...'"
+        (input)="onSearchInput($event)"
+        (blur)="onInputBlur()"
+        class="input-field"
+      />
+    </div>
+
+    <div class="add-form">
+      <input #titleInput type="text" placeholder="Recipe Title" class="input-field" />
+      <input #imageInput type="text" placeholder="Image URL (optional)" class="input-field" />
+      
+      <select #categorySelect class="select-field">
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch" selected>Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Dessert">Dessert</option>
+      </select>
+
+      <select #difficultySelect class="select-field">
+        <option value="Easy">Easy</option>
+        <option value="Medium" selected>Medium</option>
+        <option value="Hard">Hard</option>
+      </select>
+
+      <button
+        (click)="onAddRecipe(titleInput, categorySelect, difficultySelect, imageInput)"
+        class="btn btn-primary"
+      >
+        Add Recipe
+      </button>
+    </div>
+  </section>
+
+  <!-- 3. CONTROL FLOW SYNTAX (@if, @for, @empty) -->
+  <section class="recipe-grid-section">
+    @if (loading$ | async) {
+      <div class="loading-spinner">
+        <p>Fetching recipe collection from RxJS stream...</p>
+      </div>
+    } @else {
+      <div class="recipe-grid">
+        @for (recipe of (recipes$ | async); track recipe.id) {
+          <!-- 4. DYNAMIC CSS CLASS BINDING -->
+          <article
+            class="recipe-card"
+            [class.favorite-card]="recipe.isFavorite"
+            [class.easy-diff]="recipe.difficulty === 'Easy'"
+            [class.hard-diff]="recipe.difficulty === 'Hard'"
+          >
+            <!-- Property Binding [src] and [alt] -->
+            <img [src]="recipe.imageUrl" [alt]="recipe.title" class="recipe-img" />
+
+            <div class="recipe-body">
+              <span class="category-tag">{{ recipe.category }}</span>
+              <h3>{{ recipe.title }}</h3>
+              <p class="time">⏱ {{ recipe.prepTimeMinutes }} mins prep</p>
+
+              <div class="card-controls">
+                <!-- Dropdown with Property Binding [value] and (change) event -->
+                <select
+                  [value]="recipe.difficulty"
+                  (change)="onDifficultyChange(recipe.id, $event)"
+                  class="select-field small"
+                >
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+
+                <!-- Dynamic class binding & click binding -->
+                <button
+                  (click)="onToggleFavorite(recipe.id)"
+                  class="btn-fav"
+                  [class.active]="recipe.isFavorite"
+                >
+                  {{ recipe.isFavorite ? '★ Favorited' : '☆ Favorite' }}
+                </button>
+
+                <button (click)="onDeleteRecipe(recipe.id)" class="btn-danger">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <div class="empty-state">
+            <p>🍲 No recipes found matching your search criteria.</p>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
