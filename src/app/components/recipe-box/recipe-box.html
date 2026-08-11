@@ -1,104 +1,114 @@
-<div class="container">
-  <!-- 1. INTERPOLATION -->
-  <header>
-    <h1>{{ appName }}</h1>
-    <p class="status-bar">Status: {{ lastActionMessage }}</p>
-    <p>Saved Favorites: <strong>{{ favoriteCount$ | async }}</strong></p>
+<div class="container my-4">
+  <!-- HEADER -->
+  <header class="pb-3 mb-4 border-bottom">
+    <h1 class="display-6 fw-bold text-danger">{{ appName }}</h1>
+    <p class="text-muted small">Status: {{ lastActionMessage }}</p>
+    <p class="mb-0">Saved Favorites: <span class="badge bg-warning text-dark">{{ favoriteCount$ | async }}</span></p>
   </header>
 
-  <!-- 2. PROPERTY & EVENT BINDINGS -->
-  <section class="controls">
-    <div class="input-group">
-      <!-- (input) and (blur) events with [placeholder] binding -->
-      <input
-        type="text"
-        [placeholder]="'Search recipes by title...'"
-        (input)="onSearchInput($event)"
-        (blur)="onInputBlur()"
-        class="input-field"
-      />
+  <!-- FORM -->
+  <section class="mb-4">
+    <div class="row g-2 mb-3">
+      <div class="col-12">
+        <input
+          type="text"
+          class="form-control"
+          [placeholder]="'Search recipes by title...'"
+          (input)="onSearchInput($event)"
+          (blur)="onInputBlur()"
+        />
+      </div>
     </div>
 
-    <div class="add-form">
-      <input #titleInput type="text" placeholder="Recipe Title" class="input-field" />
-      <input #imageInput type="text" placeholder="Image URL (optional)" class="input-field" />
-      
-      <select #categorySelect class="select-field">
-        <option value="Breakfast">Breakfast</option>
-        <option value="Lunch" selected>Lunch</option>
-        <option value="Dinner">Dinner</option>
-        <option value="Dessert">Dessert</option>
-      </select>
-
-      <select #difficultySelect class="select-field">
-        <option value="Easy">Easy</option>
-        <option value="Medium" selected>Medium</option>
-        <option value="Hard">Hard</option>
-      </select>
-
-      <button
-        (click)="onAddRecipe(titleInput, categorySelect, difficultySelect, imageInput)"
-        class="btn btn-primary"
-      >
-        Add Recipe
-      </button>
+    <div class="row g-2 bg-light p-3 rounded border">
+      <div class="col-md-3">
+        <input #titleInput type="text" placeholder="Recipe Title" class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <input #imageInput type="text" placeholder="Image URL (optional)" class="form-control" />
+      </div>
+      <div class="col-md-2">
+        <select #categorySelect class="form-select">
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch" selected>Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Dessert">Dessert</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select #difficultySelect class="form-select">
+          <option value="Easy">Easy</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button
+          (click)="onAddRecipe(titleInput, categorySelect, difficultySelect, imageInput)"
+          class="btn btn-danger w-100"
+        >
+          Add Recipe
+        </button>
+      </div>
     </div>
   </section>
 
-  <!-- 3. CONTROL FLOW SYNTAX (@if, @for, @empty) -->
-  <section class="recipe-grid-section">
+  <!-- RECIPE GRID -->
+  <section>
     @if (loading$ | async) {
-      <div class="loading-spinner">
-        <p>Fetching recipe collection from RxJS stream...</p>
+      <div class="text-center py-5 bg-light rounded">
+        <div class="spinner-border text-danger mb-2" role="status"></div>
+        <p class="text-muted mb-0">Fetching recipe collection from RxJS stream...</p>
       </div>
     } @else {
-      <div class="recipe-grid">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         @for (recipe of (recipes$ | async); track recipe.id) {
-          <!-- 4. DYNAMIC CSS CLASS BINDING -->
-          <article
-            class="recipe-card"
-            [class.favorite-card]="recipe.isFavorite"
-            [class.easy-diff]="recipe.difficulty === 'Easy'"
-            [class.hard-diff]="recipe.difficulty === 'Hard'"
-          >
-            <!-- Property Binding [src] and [alt] -->
-            <img [src]="recipe.imageUrl" [alt]="recipe.title" class="recipe-img" />
+          <div class="col">
+            <div 
+              class="card h-100 shadow-sm"
+              [class.border-warning]="recipe.isFavorite"
+              [class.border-2]="recipe.isFavorite"
+            >
+              <img [src]="recipe.imageUrl" [alt]="recipe.title" class="card-img-top" style="height: 180px; object-fit: cover;" />
+              
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-secondary">{{ recipe.category }}</span>
+                  <small class="text-muted">⏱ {{ recipe.prepTimeMinutes }} mins</small>
+                </div>
 
-            <div class="recipe-body">
-              <span class="category-tag">{{ recipe.category }}</span>
-              <h3>{{ recipe.title }}</h3>
-              <p class="time">⏱ {{ recipe.prepTimeMinutes }} mins prep</p>
+                <h5 class="card-title fw-bold fs-6">{{ recipe.title }}</h5>
 
-              <div class="card-controls">
-                <!-- Dropdown with Property Binding [value] and (change) event -->
-                <select
-                  [value]="recipe.difficulty"
-                  (change)="onDifficultyChange(recipe.id, $event)"
-                  class="select-field small"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
+                <div class="mt-auto pt-3 d-flex gap-2 align-items-center border-top">
+                  <select
+                    [value]="recipe.difficulty"
+                    (change)="onDifficultyChange(recipe.id, $event)"
+                    class="form-select form-select-sm"
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
 
-                <!-- Dynamic class binding & click binding -->
-                <button
-                  (click)="onToggleFavorite(recipe.id)"
-                  class="btn-fav"
-                  [class.active]="recipe.isFavorite"
-                >
-                  {{ recipe.isFavorite ? '★ Favorited' : '☆ Favorite' }}
-                </button>
+                  <button
+                    (click)="onToggleFavorite(recipe.id)"
+                    class="btn btn-sm"
+                    [class.btn-warning]="recipe.isFavorite"
+                    [class.btn-outline-warning]="!recipe.isFavorite"
+                  >
+                    {{ recipe.isFavorite ? '★' : '☆' }}
+                  </button>
 
-                <button (click)="onDeleteRecipe(recipe.id)" class="btn-danger">
-                  Delete
-                </button>
+                  <button (click)="onDeleteRecipe(recipe.id)" class="btn btn-sm btn-outline-danger">
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
-          </article>
+          </div>
         } @empty {
-          <div class="empty-state">
-            <p>🍲 No recipes found matching your search criteria.</p>
+          <div class="col-12 text-center py-5 bg-light rounded w-100">
+            <p class="text-muted mb-0">🍲 No recipes found matching your search criteria.</p>
           </div>
         }
       </div>

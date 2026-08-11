@@ -14,7 +14,7 @@ import { debounceTime, distinctUntilChanged, combineLatestWith, map } from 'rxjs
 export class RecipeBox implements OnInit {
   private recipeService = inject(RecipeService);
 
-  appName = 'FlavorForge Recipe Box';
+  appName = 'Wizni Recipe Box';
   lastActionMessage = 'Ready to cook!';
 
   recipes$!: Observable<Recipe[]>;
