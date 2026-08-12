@@ -9,13 +9,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Convert the Promise from getToken() to an Observable
   return from(authService.getToken()).pipe(
     switchMap(token => {
-      // Clone the request to attach the Authorization header if token exists
-      const authReq = token 
-        ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-        : req;
+      let authReq = req;
+
+      if (token) {
+        // If talking to Firebase Realtime DB, attach token as a query parameter
+        if (req.url.includes('firebaseio.com')) {
+          authReq = req.clone({ setParams: { auth: token } });
+        } else {
+          // If talking to a standard backend, use the Bearer header
+          authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+        }
+      }
 
       return next(authReq).pipe(
         catchError((error: HttpErrorResponse) => {

@@ -3,11 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Recipe } from '../models/recipe.model';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class RecipeService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/recipes`;
+  // Ensure your environment.apiUrl looks like: 'https://YOUR-PROJECT-default-rtdb.firebaseio.com'
+  private apiUrl = environment.apiUrl;
+  private authService = inject(AuthService);
   private recipesSubject = new BehaviorSubject<Recipe[]>([]);
   public recipes$ = this.recipesSubject.asObservable();
 
@@ -15,14 +18,25 @@ export class RecipeService {
   public loading$ = this.loadingSubject.asObservable();
 
   constructor() {
-    this.loadRecipes();
+    // Instead of loading immediately, wait for the user to be logged in
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.loadRecipes(); // Fetch data when user logs in
+      } else {
+        this.recipesSubject.next([]); // Clear data when user logs out
+      }
+    });
   }
 
   loadRecipes(): void {
     this.loadingSubject.next(true);
-    this.http.get<Recipe[]>(this.apiUrl).subscribe({
-      next: (recipes) => {
-        this.recipesSubject.next(recipes);
+    this.http.get<Record<string, Recipe>>(`${this.apiUrl}/recipes.json`).subscribe({
+      next: (res) => {
+        const recipesArray: Recipe[] = res 
+          ? Object.keys(res).map(key => ({ ...res[key], id: key })) 
+          : [];
+          
+        this.recipesSubject.next(recipesArray);
         this.loadingSubject.next(false);
       },
       error: (err) => {
@@ -33,7 +47,7 @@ export class RecipeService {
   }
 
   getRecipeById(id: string | number): Observable<Recipe> {
-    return this.http.get<Recipe>(`${this.apiUrl}/${id}`);
+    return this.http.get<Recipe>(`${this.apiUrl}/recipes/${id}.json`);
   }
 
   getFavoriteCount(): Observable<number> {
@@ -43,13 +57,20 @@ export class RecipeService {
   }
 
   // --- (CRUD) ---
-
-  addRecipe(title: string, category: string, difficulty: 'Easy' | 'Medium' | 'Hard', imageUrl: string): void {
-    const newRecipe = { title, category, difficulty, imageUrl, isFavorite: false };
+  addRecipe(
+    title: string, 
+    category: 'Breakfast' | 'Lunch' | 'Dinner' | 'Dessert', // <-- Updated type
+    difficulty: 'Easy' | 'Medium' | 'Hard', 
+    imageUrl: string, 
+    prepTimeMinutes: number
+  ): void {
+    
+    const newRecipe = { title, category, difficulty, imageUrl, prepTimeMinutes, isFavorite: false };
     
     this.loadingSubject.next(true);
-    this.http.post<Recipe>(this.apiUrl, newRecipe).subscribe({
-      next: (savedRecipe) => {
+    this.http.post<{ name: string }>(`${this.apiUrl}/recipes.json`, newRecipe).subscribe({
+      next: (res) => {
+        const savedRecipe: Recipe = { ...newRecipe, id: res.name };
         const current = this.recipesSubject.value;
         this.recipesSubject.next([...current, savedRecipe]);
         this.loadingSubject.next(false);
@@ -62,16 +83,14 @@ export class RecipeService {
   }
 
   toggleFavorite(id: string | number): void {
-    const stringId = String(id); // Standardize to string
+    const stringId = String(id);
     const recipe = this.recipesSubject.value.find(r => String(r.id) === stringId);
     if (!recipe) return;
 
     const newStatus = !recipe.isFavorite;
-    
-    // Optimistic UI update
     this.updateLocalRecipeState(stringId, { isFavorite: newStatus });
 
-    this.http.patch<Recipe>(`${this.apiUrl}/${stringId}`, { isFavorite: newStatus }).subscribe({
+    this.http.patch<Recipe>(`${this.apiUrl}/recipes/${stringId}.json`, { isFavorite: newStatus }).subscribe({
       error: (err) => {
         console.error('Failed to toggle favorite, reverting state.', err);
         this.updateLocalRecipeState(stringId, { isFavorite: !newStatus });
@@ -85,11 +104,9 @@ export class RecipeService {
     if (!recipe) return;
 
     const previousDifficulty = recipe.difficulty;
-
-    // Optimistic UI update
     this.updateLocalRecipeState(stringId, { difficulty });
 
-    this.http.patch<Recipe>(`${this.apiUrl}/${stringId}`, { difficulty }).subscribe({
+    this.http.patch<Recipe>(`${this.apiUrl}/recipes/${stringId}.json`, { difficulty }).subscribe({
       error: (err) => {
         console.error('Failed to update difficulty, reverting state.', err);
         this.updateLocalRecipeState(stringId, { difficulty: previousDifficulty });
@@ -101,10 +118,9 @@ export class RecipeService {
     const stringId = String(id);
     const previousState = this.recipesSubject.value;
     
-    // Optimistic UI update
     this.recipesSubject.next(previousState.filter(r => String(r.id) !== stringId));
 
-    this.http.delete(`${this.apiUrl}/${stringId}`).subscribe({
+    this.http.delete(`${this.apiUrl}/recipes/${stringId}.json`).subscribe({
       error: (err) => {
         console.error('Failed to delete recipe, reverting state.', err);
         this.recipesSubject.next(previousState);

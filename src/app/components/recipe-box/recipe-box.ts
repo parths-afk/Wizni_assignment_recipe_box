@@ -64,7 +64,16 @@ export class RecipeBox implements OnInit {
     const difficulty = difficultySelect.value as Recipe['difficulty'];
     const imageUrl = imageInput.value.trim();
 
-    this.recipeService.addRecipe(title, category, difficulty, imageUrl);
+    const prepTimeMinutes = 30; 
+  
+  // 2. Pass it into the service:
+  this.recipeService.addRecipe(
+    title, 
+    category, // Make sure your component types this as 'Breakfast' | 'Lunch' | etc.
+    difficulty, 
+    imageUrl, 
+    prepTimeMinutes // <-- Now this variable actually exists!
+  );
     this.lastActionMessage = `Added recipe: "${title}"`;
 
     titleInput.value = '';
