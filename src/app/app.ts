@@ -4,7 +4,7 @@ import { RecipeBox } from './components/recipe-box/recipe-box';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RecipeBox],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

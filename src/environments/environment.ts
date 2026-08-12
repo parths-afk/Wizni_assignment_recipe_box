@@ -9,5 +9,5 @@ export const environment = {
     appId: "1:669605634501:web:f658abe93b51c26b536bac",
     measurementId: "G-ZN925R13G0"
   },
-  apiUrl: 'https://api.flavorforge.your-gcp-project.com'// needs to be changed later to work properly
+  apiUrl: 'https://recipe-box-aa9b9.firebaseapp.com'// needs to be changed later to work properly
 };

@@ -14,7 +14,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./components/recipe-box/recipe-box').then(m => m.RecipeBoxComponent)
+        loadComponent: () => import('./components/recipe-box/recipe-box').then(m => m.RecipeBox)
       },
       {
         path: ':id',

@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
         <div class="col-md-6 col-lg-4">
           <div class="card shadow-sm">
             <div class="card-body">
-              <h3 class="card-title text-center mb-4">FlavorForge</h3>
+              <h3 class="card-title text-center mb-4">Wizni recipes</h3>
               
               @if (errorMessage) {
                 <div class="alert alert-danger">{{ errorMessage }}</div>
