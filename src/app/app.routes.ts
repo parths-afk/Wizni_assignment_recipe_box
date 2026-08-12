@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 import { authGuard } from './gaurds/auth.gaurd';
 import { recipeResolver } from './resolvers/recipe.resolver';
 
+// angular routing
+// Enables multi-page navigation across URLs.
+// ALL components here use lazy loading, which means they are loaded only when the user navigates to that route.
+
 export const routes: Routes = [
   { path: '', redirectTo: 'recipes', pathMatch: 'full' },
   { 
