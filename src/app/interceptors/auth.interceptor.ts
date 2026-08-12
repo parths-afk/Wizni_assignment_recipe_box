@@ -5,6 +5,8 @@ import { from, throwError } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
+// interceptors - injects headers (Bearer token) into all HTTP requests.
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -13,6 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     switchMap(token => {
       let authReq = req;
 
+      // needed to add this because of firebase behaviour
       if (token) {
         if (req.url.includes('firebaseio.com')) {
           authReq = req.clone({ setParams: { auth: token } });
