@@ -1,0 +1,31 @@
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { from, throwError } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  // Convert the Promise from getToken() to an Observable
+  return from(authService.getToken()).pipe(
+    switchMap(token => {
+      // Clone the request to attach the Authorization header if token exists
+      const authReq = token 
+        ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+        : req;
+
+      return next(authReq).pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401 || error.status === 403) {
+            console.error('Unauthorized request - redirecting to login');
+            authService.logout().then(() => router.navigate(['/login']));
+          }
+          return throwError(() => error);
+        })
+      );
+    })
+  );
+};
