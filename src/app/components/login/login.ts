@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -45,6 +45,7 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   email = '';
   password = '';
@@ -52,15 +53,34 @@ export class LoginComponent {
   isLoading = false;
 
   async onSubmit() {
+    if (!this.email || !this.password) return;
+
     this.isLoading = true;
     this.errorMessage = '';
+
     try {
       await this.authService.login(this.email, this.password);
-      this.router.navigate(['/recipes']);
+      await this.router.navigate(['/recipes']);
     } catch (err: any) {
-      this.errorMessage = 'Invalid credentials. Please try again.';
+      this.errorMessage = this.getErrorMessage(err.code);
     } finally {
       this.isLoading = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private getErrorMessage(errorCode: string): string {
+    switch (errorCode) {
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found':
+        return 'Incorrect email or password. Please try again.';
+      case 'auth/too-many-requests':
+        return 'Too many failed login attempts. Please try again later.';
+      case 'auth/invalid-email':
+        return 'Please enter a valid email address.';
+      default:
+        return 'Failed to log in. Please check your network and credentials.';
     }
   }
 }
