@@ -8,7 +8,6 @@ import { AuthService } from './auth.service';
 @Injectable({ providedIn: 'root' })
 export class RecipeService {
   private http = inject(HttpClient);
-  // Ensure your environment.apiUrl looks like: 'https://YOUR-PROJECT-default-rtdb.firebaseio.com'
   private apiUrl = environment.apiUrl;
   private authService = inject(AuthService);
   private recipesSubject = new BehaviorSubject<Recipe[]>([]);
@@ -18,12 +17,11 @@ export class RecipeService {
   public loading$ = this.loadingSubject.asObservable();
 
   constructor() {
-    // Instead of loading immediately, wait for the user to be logged in
     this.authService.user$.subscribe(user => {
       if (user) {
-        this.loadRecipes(); // Fetch data when user logs in
+        this.loadRecipes();
       } else {
-        this.recipesSubject.next([]); // Clear data when user logs out
+        this.recipesSubject.next([]);
       }
     });
   }
