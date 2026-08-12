@@ -31,7 +31,6 @@ import { Recipe } from '../../models/recipe.model';
             </div>
 
             <p class="card-text">
-              <!-- Render recipe instructions or description here -->
               This is where the delicious details for {{ recipe.title }} live.
             </p>
           </div>
@@ -49,7 +48,6 @@ export class RecipeDetailComponent implements OnInit {
   recipe!: Recipe;
 
   ngOnInit() {
-    // Data is pre-fetched by the resolver, so it's immediately available synchronously
     this.recipe = this.route.snapshot.data['recipe'];
   }
 }

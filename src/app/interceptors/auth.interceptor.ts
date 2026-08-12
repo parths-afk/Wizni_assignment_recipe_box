@@ -14,11 +14,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       let authReq = req;
 
       if (token) {
-        // If talking to Firebase Realtime DB, attach token as a query parameter
         if (req.url.includes('firebaseio.com')) {
           authReq = req.clone({ setParams: { auth: token } });
         } else {
-          // If talking to a standard backend, use the Bearer header
           authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
         }
       }

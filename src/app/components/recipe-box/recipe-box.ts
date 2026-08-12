@@ -37,8 +37,6 @@ export class RecipeBox implements OnInit {
     );
   }
 
-  // Examples of event binding methods for the template
-
   // Search input
   onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -65,14 +63,13 @@ export class RecipeBox implements OnInit {
     const imageUrl = imageInput.value.trim();
 
     const prepTimeMinutes = 30; 
-  
-  // 2. Pass it into the service:
+
   this.recipeService.addRecipe(
     title, 
-    category, // Make sure your component types this as 'Breakfast' | 'Lunch' | etc.
+    category,
     difficulty, 
     imageUrl, 
-    prepTimeMinutes // <-- Now this variable actually exists!
+    prepTimeMinutes
   );
     this.lastActionMessage = `Added recipe: "${title}"`;
 
